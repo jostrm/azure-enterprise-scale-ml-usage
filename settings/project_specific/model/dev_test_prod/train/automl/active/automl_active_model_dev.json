@@ -1,1 +1,1 @@
-{"experiment_name": "03_diabetes_model_reg", "model_name_automl": "AutoMLd187047be0", "run_id": "AutoML_d187047b-ec46-4be5-b6fd-f6c267b203a3", "dev_test_prod": "dev", "registered_model_version": -1}
+{"experiment_name": "03_diabetes_model_reg", "model_name_automl": "AutoML60173c15b0", "run_id": "AutoML_60173c15-b76b-412b-97f8-0be0b1b7723d", "dev_test_prod": "dev", "registered_model_version": 1}
