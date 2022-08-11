@@ -1,11 +1,11 @@
 {
-    "adgroup_common" : "acme-{esmlcmn}-owner",
-    "adgroup_project" : "acme-{esmlprj001}-contributor",
+    "adgroup_common" : "msft-{esmlcmn}-owner",
+    "adgroup_project" : "msft-{esmlprj001}-contributor",
     "cmn_sp": "sp-{esmlcmn}",
     "project_sp": "sp-{esmlprj001}",
 
     "rg_all_caps" : true,
-    "rg_common" : "acme-{esmlcmn}-weu-{dev}-rg",
+    "rg_common" : "msft-{esmlcmn}-weu-{dev}-rg",
     "cmn_storage_account" : "sa{esmlcmn}weu{dev}001",
     "cmn_service_datafactory" : "adf-{esmlcmn}-weu-{dev}-001",
     "cmn_keyvault" : "kv-{esmlcmn}-weu-{dev}",
@@ -14,7 +14,7 @@
     "cmn_vnet" : "vnet-{esmlcmn}-weu-{dev}-001",
     "cmn_subnet" : "snet-{esmlcmn}-001",
 
-    "rg_project" : "acme-esml-{prj001}-weu-{dev}-rg",
+    "rg_project" : "msft-esml-{prj001}-weu-{dev}-rg",
 
     "service_azurem_ml" : "aml-{esmlprj001}-weu-{dev}-001",
     "service_azurem_ml_keyvault" : "kv-{esmlprj001}-weu-{dev}001",

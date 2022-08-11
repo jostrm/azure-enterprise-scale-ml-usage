@@ -1,22 +1,18 @@
 {
     "storage_type_blob": false,
-    "temp_blob_container_name": "project2",
-    "temp_blob_name": "sajxxbgsflcu8jc",
-    "temp_blob_secret_key": "kv-secret-ai-saKey",
-    
-    "blob_datastore_name": "project2",
-    "lake_datastore_name": "project2lake",
-    "lake_name": "mlweudevcmnai4",
+
+    "lake_datastore_name": "project001",
     "lake_fs": "lake3",
 
-    "esml-common-sp-id":"ml-common-sp-id",
-    "esml-common-sp-secret": "ml-common-sp-secret",
-    "external_keyvault_url": "https://ml-weu-dev-kv.vault.azure.net/",
+    "esml-common-sp-id":"esml-common-sp-id",
+    "esml-common-sp-secret": "esml-common-sp-secret",
+    "external_keyvault_url_suffix_dev":"suffix_placeholder", 
+    "external_keyvault_url_suffix_test":"", 
+    "external_keyvault_url_suffix_prod":"",
+    "external_keyvault_url": "https://todo{dev_test_prod_placeholder}-abc-{suffix_placeholder}.vault.azure.net/",
 
-    "kv-secret-esml-projectXXX-sp-id":"kv-secret-ml-pr2-sp-id",
-    "tenant": "kv-ml-weu-dev-tenant",
-    "kv-secret-esml-projectXXX-sp-secret":"kv-secret-ml-pr2-sp-secret",
-
-    "kv-secret-esml-projectXXX-sp-name":"kv-secret-ml-pr2-sp-name",
-    "kv-secret-esml-projectXXX-sp-secret-id":"kv-secret-ml-pr2-sp-secret-id"
+    "kv-secret-esml-projectXXX-sp-id":"esml-project-sp-id",
+    "kv-secret-esml-projectXXX-sp-secret":"esml-project-sp-secret",
+    "tenant": "esml-tenant-id",
+    "use_project_sp_2_mount": true
 }

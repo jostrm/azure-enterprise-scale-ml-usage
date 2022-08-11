@@ -1,7 +1,7 @@
 {
   "aks_dev_test": true,
   "num_replicas":1,
-  "aks_name": "esml-dev-prj{}",
+  "aks_name": "esml{}-weu-dev",
   "aks_name_override": "",
   "aks_service_name": "esml-dev-p{}-m{}-aksapi",
   "image_name": "esml-dev-p{}-m{}-img",
@@ -22,10 +22,11 @@
   "ssl_cert_pem_file": "",
   "ssl_key_pem_file": "",
   "ssl_cname": "",
-  "leaf_domain_label": "esmlcmn",
-  "service_cidr": "",
-  "dns_service_ip": "",
-  
+  "leaf_domain_label": "esmlcmndev",
+  "service_cidr": "10.50.0.0/21",
+  "dns_service_ip": "10.50.0.10",
+  "docker_bridge_cidr":"172.17.0.1/16",
+    
   "collect_model_data": false,
   "key_auth_enabled": true,
   "token_auth_enabled": false,
@@ -33,5 +34,8 @@
   "aks_memory_gb": 8,
   "enable_app_insights": false,
   "description": "AKS webserice in DEV environment.",
-  "tags": "{'environment': 'dev'}"
+  "tags": "{'environment': 'dev'}",
+  "scoring_timeout_ms": 300000,
+  "max_request_wait_time": 10000,
+  "timeout_seconds": 1
 }

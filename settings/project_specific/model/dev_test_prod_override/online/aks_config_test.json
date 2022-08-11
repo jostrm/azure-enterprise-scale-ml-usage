@@ -1,6 +1,6 @@
 {
   "aks_dev_test": false,
-  "aks_name": "esml-test-prj{}",
+  "aks_name": "esml{}-weu-test",
   "aks_name_override": "",
   "aks_service_name": "esml-test-prj{}-aks-api",
   "image_name": "esml-dev-prj{}-image",
@@ -21,9 +21,10 @@
   "ssl_cert_pem_file": "",
   "ssl_key_pem_file": "",
   "ssl_cname": "",
-  "leaf_domain_label": "esmlcmn",
-  "service_cidr": "",
-  "dns_service_ip": "",
+  "leaf_domain_label": "esmlcmntest",
+  "service_cidr": "10.60.0.0/21",
+  "dns_service_ip": "10.60.0.10",
+  "docker_bridge_cidr":"172.17.0.1/16",
 
   "collect_model_data": false,
   "key_auth_enabled": true,
@@ -33,5 +34,8 @@
   "aks_memory_gb": 4,
   "enable_app_insights": true,
   "description": "AKS webserice in TEST environment.",
-  "tags": "{'environment': 'test'}"
+  "tags": "{'environment': 'test'}",
+  "scoring_timeout_ms": 300000,
+  "max_request_wait_time": 10000,
+  "timeout_seconds": 1
 }
