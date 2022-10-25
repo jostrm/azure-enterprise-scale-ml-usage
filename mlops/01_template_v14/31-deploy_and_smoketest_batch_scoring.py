@@ -22,29 +22,52 @@ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THE SOFTWARE CODE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-Howto: Write variables in Azure Devops
-# To set pipeline variables in scripts:
-#print ('##vso[task.setvariable variable=esml_environment]dev_from_python')
-#print('##vso[task.setvariable variable=secret.Sauce;issecret=true]crushed tomatoes with garlic')
-#print (f'##vso[task.setvariable variable=esml_environment]{p.dev_test_prod}')
-# END example. Where you can use this to set ESMProject.dev_test_prod = args.esml_env
 """
-import repackage
-#repackage.add("../../esml/common/")
-repackage.add("../../azure-enterprise-scale-ml/esml/common/")
+import sys
+sys.path.insert(0, "../../azure-enterprise-scale-ml/esml/common/")
 import azureml.core
-from azureml.core.authentication import AzureCliAuthentication
 from esml import ESMLProject
+from baselayer_azure_ml_pipeline import esml_pipeline_types
+from baselayer_azure_ml_pipeline import ESMLPipelineFactory
 print("SDK Version:", azureml.core.VERSION)
 
-p = ESMLProject.get_project_from_env_command_line() # Alt A)
+# IN PARAMETERS
+esml_date_utc = '1000-01-01 10:35:01.243860' # In parameter: You can override what training data to use.
+esml_model_number = 11
+
+p,esml_date_utc,esml_model_number = ESMLProject.get_project_from_env_command_line() # Alt A)
 if(p is None): # Alt B) Just for DEMO purpose..its never None
     p = ESMLProject() #  B)= Reads from CONFIG instead - To control this, use GIT-branching and  .gitignore on "active_dev_test_prod.json" for each environment
 
-print("DEMO MLOPS FOLDER settings - remove this after you copies this folder)") # remove this after you copies this folder
-print("ESML environment (dev, test or prod): {}".format(p.dev_test_prod))
-p.describe()
-
-cli_auth = AzureCliAuthentication()
-ws, config_name = p.authenticate_workspace_and_write_config(cli_auth) # Authenticat to the current environment (dev,test, prod) and WRITES config.json | Use CLI auth if MLOps
+ws = p.ws
 print(ws.name, ws.resource_group, ws.location, ws.subscription_id, sep="\n")
+print("Project number: {}".format(p.project_folder_name))
+print("Model number: {} , esml_date_utc: {}".format(esml_model_number, esml_date_utc))
+
+p.inference_mode = False
+p.active_model = int(esml_model_number)
+
+p_factory = ESMLPipelineFactory(p)
+p_factory.batch_pipeline_parameters[1].default_value = 0 # 0 = Latest Best model_version
+p_factory.batch_pipeline_parameters[1].default_value = esml_date_utc # overrides ESMLProject.date_scoring_folder.
+p_factory.describe()
+
+## BUILD
+batch_pipeline = p_factory.create_batch_pipeline(esml_pipeline_types.IN_2_GOLD_SCORING)
+
+## RUN scoring pipeline - to smoke test it, see that it works.
+pipeline_run = p_factory.execute_pipeline(batch_pipeline)
+pipeline_run.wait_for_completion(show_output=False)
+
+# PUBLISH
+published_pipeline, endpoint = p_factory.publish_pipeline(batch_pipeline,"_1")
+
+print("2) Below needed for Azure Data factory PIPELINE activity (Pipeline OR Endpoint. Choose the latter") 
+print ("- Endpoint ID")
+print("Endpoint ID:  {}".format(endpoint.id))
+print("Endpoint Name:  {}".format(endpoint.name))
+print("Experiment name:  {}".format(p_factory.experiment_name))
+
+print("In AZURE DATA FACTORY - This is the ID you need, if using PRIVATE LINK, private Azure ML workspace.")
+print("-You need SCORING PIPELINE id, not pipeline ENDPOINT ID ( since cannot be chosen in Azure data factory if private Azure ML)")
+print(published_pipeline.id)

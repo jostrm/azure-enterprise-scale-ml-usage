@@ -23,35 +23,30 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THE SOFTWARE CODE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
-import repackage
-repackage.add("../../azure-enterprise-scale-ml/esml/common/")
-repackage.add("../../2_A_aml_pipeline/4_inference/batch/M12/your_code/")
+import sys
+sys.path.insert(0, "../../azure-enterprise-scale-ml/esml/common/")
 import azureml.core
-from azureml.core.authentication import AzureCliAuthentication
 from esml import ESMLProject
-from baselayer_azure_ml_pipeline import ESMLPipelineFactory, esml_pipeline_types
-
 print("SDK Version:", azureml.core.VERSION)
 
-p = ESMLProject.get_project_from_env_command_line()
+p,scoring_date,model_number = ESMLProject.get_project_from_env_command_line() # self-aware about its config sources
 p.describe()
 
-cli_auth = AzureCliAuthentication() 
-ws = p.get_workspace_from_config(cli_auth) # Reads the current environment (dev,test, prod)config.json | Use CLI auth if MLOps
-p.inference_mode = False # We want "TRAIN" mode
-p.init(ws) # Automapping from datalake to Azure ML datasets, prints status
-p.active_model = 12 # Y=11, price=12
+p.inference_mode = True # We want "INFERENCE" mode, when calling AKS cluster
+p.connect_to_lake() # Connect to lake...to be able to read test data and also SAVE SCORING
 
-print("FEATURE ENGINEERING - Bronze 2 Gold - working with Azure ML Datasets with Bronze, Silver, Gold concept")
+print("Environment:")
+print(p.dev_test_prod,p.ws.name)
+print("Project number: {}".format(p.project_folder_name))
+print("Model number: {} , esml_date_utc: {}".format(model_number, scoring_date))
 
-## BUILD IN_2_GOLD_SCORING
+print("Get testdata to do a smoke test with")
+X_test, y_test, tags = p.get_gold_validate_Xy() # Get the X_test data |  ESML knows the SPLIT and LABEL already (due to training)
+print(tags)
 
-### CREATE - IN_2_GOLD
-p_factory = ESMLPipelineFactory(p)
-p_factory.create_dataset_scripts_from_template(overwrite_if_exists=False) 
-batch_pipeline = p_factory.create_batch_pipeline(esml_pipeline_types.IN_2_GOLD) # Prepare data for training: Either with AutoMLStep or ManualMLStep
+#inference_config, model, best_run = p.get_active_model_inference_config(ws) # Get Model to call other pecific MODEL version, than latest |
 
-### RUN pipeline: Fire & Forget
-pipeline_run = p_factory.execute_pipeline(batch_pipeline)
-pipeline_run.wait_for_completion(show_output=False)
-
+print("Call webservice - http request to AKS endpoint over PRIVATE ip/endpoint")
+caller_user_id = '81965d9c-40ca-4e47-9723-5a608a32a0e4' # Optional: Connect scoring to a caller/user | globally for all rows
+df = p.call_webservice(p.ws, X_test,caller_user_id, False) # Call and save results to version-folder | Auto-fetch key, model_version from keyvault | #  (p.ws, X_test,caller_user_id, False, model.version)
+print(df.head())

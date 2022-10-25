@@ -23,33 +23,23 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THE SOFTWARE CODE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
-import repackage
-repackage.add("../../azure-enterprise-scale-ml/esml/common/")
+import sys
+sys.path.insert(0, "../../azure-enterprise-scale-ml/esml/common/")
 import azureml.core
-from azureml.core.authentication import AzureCliAuthentication
+import argparse
 from esml import ESMLProject
-from baselayer_azure_ml import AutoMLFactory
-
 print("SDK Version:", azureml.core.VERSION)
 
-p = ESMLProject.get_project_from_env_command_line() # self-aware about its config sources
+p,scoring_date,model_number = ESMLProject.get_project_from_env_command_line() # self-aware about its config sources
 p.describe()
+p.inference_mode = False # We want "TRAIN" mode when deploying to AKS
 
-cli_auth = AzureCliAuthentication()
-ws = p.get_workspace_from_config(cli_auth) # Reads the current environment (dev,test, prod)config.json | Use CLI auth if MLOps
-p.inference_mode = False # We want "TRAIN" mode
-#p.init(ws) # not needed. Automapping from datalake to Azure ML datasets, prints status
+print("Environment:")
+print(p.dev_test_prod,p.ws.name)
+print("Project number: {}".format(p.project_folder_name))
+print("Model number: {} , esml_date_utc: {}".format(model_number, scoring_date))
 
-target_env = "dev" # if not set, NEXT environment will be the TARGET automatically
-print("Example: If new model scores better in DEV, we can promote this to TEST")
-
-promote, m1_name, r1_id, m2_name, r2_run_id = AutoMLFactory(p).compare_scoring_current_vs_new_model(target_env)
-
-print("Promote model?  {}".format(promote))
-print("New Model: {} in environment {}".format(m1_name, p.dev_test_prod))
-print("Existing Model: {} in environment {}".format(m2_name,target_env))
-
-if (promote and p.dev_test_prod == target_env):# Can only register a model in same workspace (test->test) - need to retrain if going from dev->test
-    AutoMLFactory(p).register_active_model(target_env)
-elif (promote):# Can only register a model in same workspace as of now in ESML
-    AutoMLFactory(p).register_active_model(p.dev_test_prod)
+print("DEPLOY model on to a PRIVATE AKS cluster / endpoint...")
+inference_config, model, best_run = p.get_active_model_inference_config(p.ws)
+service,api_uri, kv_aks_api_secret= p.deploy_automl_model_to_aks(model,inference_config)
+print("Finished!")

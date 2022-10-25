@@ -23,25 +23,20 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THE SOFTWARE CODE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
-import repackage
-repackage.add("../../azure-enterprise-scale-ml/esml/common/")
+import sys
+sys.path.insert(0, "../../azure-enterprise-scale-ml/esml/common/")
 import azureml.core
-from azureml.core.authentication import AzureCliAuthentication
+#from azureml.core.authentication import AzureCliAuthentication
+from azureml.core.authentication import ServicePrincipalAuthentication
+import argparse
 from esml import ESMLProject
 print("SDK Version:", azureml.core.VERSION)
 
-p = ESMLProject.get_project_from_env_command_line() # self-aware about its config sources
-p.describe()
+p,esml_date_utc,esml_model_number = ESMLProject.get_project_from_env_command_line() # Alt A)
+if(p is None): # Alt B) Just for DEMO purpose..its never None
+    p = ESMLProject() #  B)= Reads from CONFIG instead - To control this, use GIT-branching and  .gitignore on "active_dev_test_prod.json" for each environment
 
-cli_auth = AzureCliAuthentication()
-ws, config_name = p.authenticate_workspace_and_write_config(cli_auth) # Authenticat to the current environment (dev,test, prod) and WRITES config.json | Use CLI auth if MLOps
-p.inference_mode = False # We want "TRAIN" mode
-#p.init(ws) # Not needed. No Lake needed (Automapping from datalake to Azure ML datasets, prints status)
-
-print("DEMO MLOPS FOLDER settings - remove this after you copies this folder)") # remove this after you copies this folder
-print("Environment:")
-print(p.dev_test_prod,ws.name)
-
-# DEPLOY!
-inference_config, model, best_run = p.get_active_model_inference_config(ws)
-service,api_uri, kv_aks_api_secret= p.deploy_automl_model_to_aks(model,inference_config)
+ws = p.ws
+print(ws.name, ws.resource_group, ws.location, ws.subscription_id, sep="\n")
+print("Project number: {}".format(p.project_folder_name))
+print("Model number: {} , esml_date_utc: {}".format(esml_model_number, esml_date_utc))
