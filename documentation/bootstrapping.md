@@ -44,13 +44,13 @@ At the end of its execution, the script will have created and initialized files 
 2. **Define Properties for Bootstrapping**
 
     In your root directory.
-   Create a copy of the `bootstrap.properties.template` file with this filename `bootstrap.properties`
+   Create a copy of the `.env.template` file with this filename `.env`
 
     ```sh
-    cp bootstrap.properties.template bootstrap.properties
+    cp .env.template .env
     ```
 
-    Open the `bootstrap.properties` with a text editor and update it with the following information:
+    Open the `.env` with a text editor and update it with the following information:
 
     - **GitHub Repo** (related to the new repository to be created)
         - `github_your_repo`: The current repo, your bootstrapped project repo. Ex *placerda/my-rag-project*.
@@ -68,26 +68,38 @@ At the end of its execution, the script will have created and initialized files 
         - `project_service_principal_appid`="appId" # AppId of the service principal
         - `project_service_principal_oid`="ObjectID123" # ObjectID of the service principal
 
-   Here is an example of the `bootstrap.properties` file (note that you can use the same subscription for all environments)
+   Here is an example of the `.env` file (note that you can use the same subscription for all environments)
 
-   ```properties
+   ```python
     # Github info
-    github_new_repo="<your_github_user_or_organization_id>/<new-repo-name>"
+    GITHUB_USERNAME="jostrm"
+    GITHUB_USE_SSH="false"
+    GITHUB_TEMPLATE_REPO="jostrm/azure-enterprise-scale-ml-usage" # "<template_github_user_or_organization_id>/<template-repo-name>"
+    GITHUB_NEW_REPO="<your_github_user_or_organization_id>/<new-repo-name>" # "<your_github_user_or_organization_id>/<new-repo-name>"
+    GITHUB_NEW_REPO_VISIBILITY="public" # public, private, internal
 
     # AI Factory - Globals
-    aifactory_location="eastus2"
+    AIFACTORY_LOCATION="eastus2"
+    AIFACTORY_COMMON_ONLY_DEV_ENVIRONMENT="true" # true only Dev will be created. false - it will create Dev, Stage, Prod environments in Azure
 
     # AI Factory - Environments: Dev, Stage, Prod
-    dev_subscription_id="12345678-1234-1234-1234-123456789098"
-    stage_subscription_id="12345678-1234-1234-1234-123456789098"
-    prod_subscription_id="12345678-1234-1234-1234-123456789098"
+    DEV_NAME="dev"
+    STAGE_NAME="test" # Note: Can be anything, but choose `test` to align with ESML
+    PROD_NAME="prod"
+    DEV_SUBSCRIPTION_ID="12345678-1234-1234-1234-123456789098"
+    STAGE_SUBSCRIPTION_ID="12345678-1234-1234-1234-123456789098"
+    PROD_SUBSCRIPTION_ID="12345678-1234-1234-1234-123456789098"
 
     # AI Factory - Projects
-    project_type="esgenai"
-    project_number="001"
-    project_members="objectId1,objectId2,objectId3"
-    project_service_principal_appid="appId"
-    project_service_principal_oid="ObjectID123"
+    PROJECT_TYPE="esgenai" # esml, esgenai
+    PROJECT_NUMBER="001" # unique number per aifactory
+    PROJECT_MEMBERS="objectId1,objectId2,objectId3" # ObjectID in a commas separated list, without space
+    PROJECT_MEMBERS_IP_ADDRESS="90.12.3.1,192.12.3.1,192.12.3.1" # IP adresses in a commas separated list, without space, to whitelist to UI in Azure
+    PROJECT_SERVICE_PRINCIPAL_APPID="appId" # AppId of the service principal
+    PROJECT_SERVICE_PRINCIPAL_OID="ObjectID123" # ObjectID of the service principal
+
+    # AI Factory - Projects:Security
+    NETWORKING_GENAI_PRIVATE_PRIVATE_UI="true" # false, the UI in AI Studio will be publicly accessible for specific IP addresses via IPRules (service endpoints)
    ```
 
 3. **Authenticate with Azure and GitHub**
@@ -142,7 +154,7 @@ You need to login via `Azure CLI` and `Github CLI`, but recommendation is to als
 4. **Run the Bootstrap Script**
 
    The bootstrap script is available in root folder (`bootstrap.sh`). 
-   It will also read environment variables from bootstrap.properties locally and copy them to the Github Repo environment, using the [GitHub CLI (gh)](https://cli.github.com/) 
+   It will also read environment variables from .env locally and copy them to the Github Repo environment, using the [GitHub CLI (gh)](https://cli.github.com/) 
 
    **For Bash:**
 

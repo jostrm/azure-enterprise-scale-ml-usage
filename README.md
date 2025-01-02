@@ -12,7 +12,7 @@ This is a template repository, bootstrapped with the Enterprise Scale AIFactory 
 This repo will leverages resources/templates from the [`Enterprise Scale AI Factory submodule`](https://github.>com/jostrm/azure-enterprise-scale-ml/) including templats for `IaC AI landingzones, DataOps, MLOps, GenAIOps`. <br>This repo and act as your repo with options as: [Github private, internal, public repo](https://resources.github.com/learn/pathways/administration-governance/essentials/manage-your-repository-visibility-rules-and-settings/), or a [private or public Azure Devops repository](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops)
 
 ## The purpose of this repo
-This repo, is purposed to bootstrap a repository, that automatically links to the centralized (readonly)submodule `azure-enterprise-scale-ml`, and provides you with templates for YOUR variables, to customize your AI Factory, besides the basic [bootstrap.properties](./bootstrap.properties) parameters that will end up as Variables in your Github/Azure Devops.
+This repo, is purposed to bootstrap a repository, that automatically links to the centralized (readonly)submodule `azure-enterprise-scale-ml`, and provides you with templates for YOUR variables, to customize your AI Factory, besides the basic [.env.template](./.env.template) parameters that will end up as Variables in your Github/Azure Devops.
 
 It also provides an automation script to copy templates IaC automation variables and other templates for (DataOps, MLOps, GenAIOps)[https://github.com/jostrm/azure-enterprise-scale-ml/]. (Read more)[which you can read more about here]<br>
 
@@ -21,7 +21,7 @@ This repo is the *simple mode* to setup an AIFactory. This contains automation t
 - Automate the [full manual AIFactory setup process seen here](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/v2/10-19/13-setup-aifactory.md), estimated time effort 2h.
 - Set default vaules for all 30 [AIFactory based parameters seen here](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/v2/10-19/13-parameters-ado.md), estimated time effort 1h.
 
-Leaving only a hand-full variables for you you to setup in [bootstrap.properties](./bootstrap.properties) in this repo.
+Leaving only a hand-full variables for you you to setup in [.env.template](./.env.template) in this repo.
 
 > [!NOTE]
 > You can still go into *advanced mode*, and edit all parameters. You will find them here in the [parameters](aifactory\parameters)
@@ -30,7 +30,7 @@ Leaving only a hand-full variables for you you to setup in [bootstrap.properties
 ## Setup options
 As a mirror-repo (Github) or "Bring your own repo" (Github or Azure Devops) <br>
 
-After you have copied the  [bootstrap.properties.template](./bootstrap.properties-.template) and edited your [bootstrap.properties](./bootstrap.properties), you have the options below.
+After you have copied the  [.env.template.template](./.env.template-.template) as your [.env](./.env) file, you have the options below.
 
 - A) Bootstrap as a mirror-repo in Github, it becomes a private, internal or public Github repo
     - **When to choose**: If you are allowed to create own repos, and Gihub is your preffered choice.
@@ -47,7 +47,7 @@ After you have copied the  [bootstrap.properties.template](./bootstrap.propertie
 
 > [!NOTE]
 >   
-> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [bootstrap.properties.template](./bootstrap.properties-.template). Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
+> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [.env](./.env). Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
 >
 
 ## How to create more projects of different types? 
