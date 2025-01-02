@@ -2,14 +2,14 @@
 
 ![Header](documentation/images/header.png)
 
-Welcome to the Enterprise Scale AIFactory solution accelerator, and the template repository! <br>
-This is a template repository, bootstrapped with the Enterprise Scale AIFactory submodule (which is the most common way of leveraging the AIFactory template acceleration)
+Welcome to the Enterprise Scale AIFactory solution accelerator template. <br>
+This is a template repository, bootstrapped with the Enterprise Scale AIFactory submodule (the most common way of leveraging the AIFactory template acceleration)
 
 > [!IMPORTANT]
 >This project provides a ready-to-run github repo, bootstrapped and connected to the *Enterprise Scale AI Factory Github submodule*. For full documentation visit the documentation section [`Enterprise Scale AI Factory submodule`](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/readme.md)
 >
 
-This repo will leverages resources/templates from the [`Enterprise Scale AI Factory submodule`](https://github.>com/jostrm/azure-enterprise-scale-ml/). <br>This repo and act as your repo with options as: [Github private, internal, public repo](https://resources.github.com/learn/pathways/administration-governance/essentials/manage-your-repository-visibility-rules-and-settings/), or a [private or public Azure Devops repository](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops)
+This repo will leverages resources/templates from the [`Enterprise Scale AI Factory submodule`](https://github.>com/jostrm/azure-enterprise-scale-ml/) including templats for `IaC AI landingzones, DataOps, MLOps, GenAIOps`. <br>This repo and act as your repo with options as: [Github private, internal, public repo](https://resources.github.com/learn/pathways/administration-governance/essentials/manage-your-repository-visibility-rules-and-settings/), or a [private or public Azure Devops repository](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops)
 
 ## The purpose of this repo
 This repo, is purposed to bootstrap a repository, that automatically links to the centralized (readonly)submodule `azure-enterprise-scale-ml`, and provides you with templates for YOUR variables, to customize your AI Factory, besides the basic [bootstrap.properties](./bootstrap.properties) parameters that will end up as Variables in your Github/Azure Devops.
