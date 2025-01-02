@@ -10,12 +10,12 @@ Welcome to the Enterprise Scale AIFactory solution accelerator! <br>
 
 This repo will leverages resources/templates from the [`Enterprise Scale AI Factory submodule`](https://github.>com/jostrm/azure-enterprise-scale-ml/). <br>This repo and act as your repo with options as: [Github private, internal, public repo](https://resources.github.com/learn/pathways/administration-governance/essentials/manage-your-repository-visibility-rules-and-settings/), or a [private or public Azure Devops repository](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops)
 
-## FAQ 01: What is the purpose of this repo? 
+## The purpose of this repo
 This repo, is purposed to bootstrap a repository, that automatically links to the centralized (readonly)submodule `azure-enterprise-scale-ml`, and provides you with templates for YOUR variables, to customize your AI Factory, besides the basic [bootstrap.properties](./bootstrap.properties) parameters that will end up as Variables in your Github/Azure Devops.
 
 It also provides an automation script to copy templates IaC automation variables and other templates for (DataOps, MLOps, GenAIOps)[https://github.com/jostrm/azure-enterprise-scale-ml/]. (Read more)[which you can read more about here]<br>
 
-## FAQ 02: Setup options: As a mirror-repo (Github), or "Bring your own repo" (Github or Azure Devops)
+## Setup options - a mirror-repo (Github) or "Bring your own repo" (Github or Azure Devops)
 After you have copied the  [bootstrap.properties.template](./bootstrap.properties-.template)and edited your [bootstrap.properties](./bootstrap.properties), you have the options below.
 
 - A) Bootstrap as a mirror-repo in Github, it becomes a private, internal or public Github repo
@@ -36,8 +36,8 @@ After you have copied the  [bootstrap.properties.template](./bootstrap.propertie
 > The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [bootstrap.properties.template](./bootstrap.properties-.template). Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
 >
 
-## FAQ 03: How to create more projects, of different types? 
-As explained in [](#faq-02-setup-options-as-a-mirror-repo-github-or-bring-your-own-repo-github-or-azure-devops), you will end up with auomation pipelines, in either your own Azure Devops(Release pipelines) or your own Github repositorys (Actions/Workflows). 
+## How to create more AI Factory's or AI Factory projects of different types? 
+As explained in [](#setup-options---a-mirror-repo-github-or-bring-your-own-repo-github-or-azure-devops), you will end up with automation pipelines, in either your own Azure Devops (as Release pipelines) or your own Github repositorys (as Actions/Workflows).
 
 The pipelines, can be executed multiple times, to provision multiple AIFactory projects. 
 You only need to change a few parameters, such as below
