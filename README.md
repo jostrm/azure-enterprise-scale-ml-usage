@@ -16,13 +16,14 @@ This repo, is purposed to bootstrap a repository, that automatically links to th
 It also provides an automation script to copy templates IaC automation variables and other templates for DataOps, MLOps, GenAIOps.<br>
 
 ## FAQ 02: Setup options: As a mirror-repo (Github), or "Bring your own repo" (Github or Azure Devops)
-You have the options below:
+After you have copied the  [bootstrap.properties.template](./bootstrap.properties-.template)and edited your [bootstrap.properties](./bootstrap.properties), you have the options below.
+
 - A) Bootstrap as a mirror-repo in Github, it becomes a private, internal or public Github repo
     - **When to choose**: If you are allowed to create own repos, and Gihub is your preffered choice.
     - **Automation scripts to run**: The scripts below, will bootstrap an empty repo.
         - [10-mirror-gh-repo-from-template-once.sh](./10-mirror-gh-repo-from-template-once)
         - [12-create-aifactory-pipeline-and-run-once.sh](./12-create-aifactory-pipeline-and-run-once.sh)
-        - [13-add-project.sh](./13-add-project-pipeline-and-run-once.sh)
+        - [13-add-project-pipeline-and-run-once.sh](./13-add-project-pipeline-and-run-once.sh)
 - B) Bring your own "empty" repo 
     - **When to choose**: If your organizaiton do not allow you to create repos, or if Azure Devops is your preffered choice
     - **Automation scripts to run**: The scripts below, will bootstrap an empty repo.
@@ -32,7 +33,7 @@ You have the options below:
 
 > [!NOTE]
 >   
-> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects.<br> Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
+> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [bootstrap.properties.template](./bootstrap.properties-.template) <br> Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
 >
 
 ## FAQ 03: How to create more projects, of different types? 
