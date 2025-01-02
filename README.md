@@ -13,7 +13,7 @@ This repo will leverages resources/templates from the [`Enterprise Scale AI Fact
 ## FAQ 01: What is the purpose of this repo? 
 This repo, is purposed to bootstrap a repository, that automatically links to the centralized (readonly)submodule `azure-enterprise-scale-ml`, and provides you with templates for YOUR variables, to customize your AI Factory, besides the basic [bootstrap.properties](./bootstrap.properties) parameters that will end up as Variables in your Github/Azure Devops.
 
-It also provides an automation script to copy templates IaC automation variables and other templates for DataOps, MLOps, GenAIOps.<br>
+It also provides an automation script to copy templates IaC automation variables and other templates for (DataOps, MLOps, GenAIOps)[https://github.com/jostrm/azure-enterprise-scale-ml/]. (Read more)[which you can read more about here]<br>
 
 ## FAQ 02: Setup options: As a mirror-repo (Github), or "Bring your own repo" (Github or Azure Devops)
 After you have copied the  [bootstrap.properties.template](./bootstrap.properties-.template)and edited your [bootstrap.properties](./bootstrap.properties), you have the options below.
@@ -33,7 +33,7 @@ After you have copied the  [bootstrap.properties.template](./bootstrap.propertie
 
 > [!NOTE]
 >   
-> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [bootstrap.properties.template](./bootstrap.properties-.template) <br> Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
+> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [bootstrap.properties.template](./bootstrap.properties-.template). Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
 >
 
 ## FAQ 03: How to create more projects, of different types? 
