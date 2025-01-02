@@ -27,7 +27,9 @@ fi
 
 # Define the temporary directory within the current directory
 current_dir=$(pwd)
-temp_dir="$current_dir/temp"
+
+#temp_dir="$current_dir/temp"
+temp_dir="../temp"
 
 # Create the temporary directory
 rm -rf "$temp_dir"
@@ -52,6 +54,7 @@ else
 fi
 github_new_repo_name=${GITHUB_NEW_REPO##*/}
 github_template_repo_name=${GITHUB_TEMPLATE_REPO##*/}
+destination_dir="../$github_new_repo_name"
 
 echo -e "\e[33mBootstraping Parameters\e[0m"
 echo -e "\e[36mGitHub Username:\e[0m $GITHUB_USERNAME"
@@ -63,6 +66,17 @@ echo -e "\e[36mGitHub New Repo:\e[0m $GITHUB_NEW_REPO"
 echo -e "\e[36mGitHub New Repo name:\e[0m $github_new_repo_name"
 echo -e "\e[36mGitHub New Repo URI:\e[0m $github_new_repo_uri"
 echo -e "\e[36mGitHub New Repo Visibility:\e[0m $GITHUB_NEW_REPO_VISIBILITY"
+echo -e "\e[36mGitHub New Repo local path destination:\e[0m $destination_dir"
+
+# Remove the existing local folder if it exists
+if [ -d "$destination_dir" ]; then
+    read -p "It seems like you already have initialized a repo, since local folder exsits at $destination_dir. Do you want to delete folder, and re-initalize(Y/n)? " choice
+    if [[ "$choice" == "n" || "$choice" == "N" ]]; then
+        echo "Exiting script."
+        exit 1
+    fi
+    rm -rf "$destination_dir"
+fi
 
 # Check if the user is already logged in to GitHub
 echo -e "${GREEN}Checking GitHub authentication status...${NC}"
@@ -97,19 +111,13 @@ fi
 # 02. Repository Creation and Initialization
 echo -e "${YELLOW}02. New GitHub Repository Creation and Initialization.${NC}"
 
-echo -e "$Current directory: $(pwd) ${NC}"
+echo -e "$Current directory (for tempfiles): $(pwd) ${NC}"
+echo -e "$Destination directory(for your repo locally): $(destination_dir) ${NC}"
 
 # Remove the existing local folder if it exists
-if [ -d "$new_project_repo" ]; then
-    rm -rf "$new_project_repo"
+if [ -d "$github_new_repo_name" ]; then
+    rm -rf "$github_new_repo_name"
 fi
-
-# ADDED CODE
-mkdir -p "$new_project_repo"
-cd "$new_project_repo"
-echo -e "$Current directory: $(pwd) - Now GIT INIT${NC}"
-git init
-# ADDED CODE
 
 # Check if the repository already exists
 repo_exists=$(gh repo view "$GITHUB_NEW_REPO" > /dev/null 2>&1; echo $?)
@@ -117,10 +125,8 @@ repo_exists=$(gh repo view "$GITHUB_NEW_REPO" > /dev/null 2>&1; echo $?)
 if [ $repo_exists -ne 0 ]; then
     # Create a new GitHub repository
     echo -e "${YELLOW}Creating a new GitHub repository.${NC}"
-    git remote -v
     gh repo create "$GITHUB_NEW_REPO" --$github_new_repo_visibility
     if [ $? -ne 0 ]; then
-        git remote -v
         echo -e "${RED}Failed to create new GitHub repository.${NC}"
         exit 1
     fi
@@ -129,17 +135,12 @@ else
     git remote -v
 fi
 
-# # ADDED CODE - Add the new remote origin
-echo -e "$Current directory: $(pwd) - GIT REMOTE ADD ORIGIN: $GITHUB_NEW_REPO.git ${NC}"
-git remote add origin "https://github.com/$GITHUB_USERNAME/$GITHUB_NEW_REPO.git"
-# ADDED CODE
-
 # Prompt the user for confirmation
-read -p "Continue (Y/n)? " choice
-if [[ "$choice" == "n" || "$choice" == "N" ]]; then
-    echo "Exiting script."
-    exit 1
-fi
+#read -p "Continue (Y/n)? " choice
+#if [[ "$choice" == "n" || "$choice" == "N" ]]; then
+#    echo "Exiting script."
+#    exit 1
+#fi
 
 # Clone the template repository
 echo -e "${YELLOW}Cloning template repository.${NC}"
@@ -227,5 +228,32 @@ echo -e "${GREEN}Access your new repo in: \nhttps://github.com/$GITHUB_NEW_REPO 
 
 # Clone the new repository
 echo -e "${YELLOW}Cloning the new GitHub repository${NC}"
-git clone "$github_new_repo_uri"
-#cd "$github_new_repo_name" 
+echo -e "${GREEN}Local path: $destination_dir ${NC}"
+
+git clone "$github_new_repo_uri" "$destination_dir"
+
+active_dir=$(pwd)
+
+cd "$destination_dir"
+
+# Init subodule
+echo -e "${YELLOW}Running init script 11-init-template-files-once.sh in new repo, to refresh submodule. ${NC}"
+git submodule update --init --recursive
+git submodule foreach 'git checkout main || git checkout -b main origin/main'
+# ./11-init-template-files-once.sh
+
+# Clean GIT history
+git checkout --orphan cleaned-history
+git add -A
+git commit -m "Initial commit with cleaned history"
+git branch -D main
+git branch -m main
+git push -f origin main
+
+#gh api -X PATCH "repos/$GITHUB_USERNAME/$GITHUB_NEW_REPO" -f description="Your repository. Your Enteprise Scale AI Factory."
+#gh repo edit https://github.com/jostrm/azure-enterprise-scale-ml-usage-2 --description "Your Enteprise Scale AI Factory.Your repository.Created from the Azure Enterprise Scale ML template."
+
+# Open VS Code
+cd "$active_dir"
+echo -e "${YELLOW}Now trying to open an new VS Code window with your new repo at $destination_dir....${NC}"
+code "$destination_dir"

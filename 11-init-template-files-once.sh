@@ -57,7 +57,6 @@ init_esml_util=true
 ################### VARIABLES ###################
 try
 (   # open a subshell !!!
-    echo "do something"
     
     if ! submodule_exists "$submodule_name"; then
         git submodule add https://github.com/jostrm/azure-enterprise-scale-ml || throw $AlreadyInIndex
@@ -68,7 +67,8 @@ try
         else
             echo "Updating submodule and checking out main branch"
             git submodule update --init --recursive
-            git submodule foreach 'git checkout main'
+            #git submodule foreach 'git checkout main'
+            git submodule foreach 'git checkout main || git checkout -b main origin/main'
         fi
     fi
     
