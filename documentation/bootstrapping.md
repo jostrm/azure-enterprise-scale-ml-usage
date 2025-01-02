@@ -148,7 +148,7 @@ You need to login via `Azure CLI` and `Github CLI`, but recommendation is to als
    d) Log in to GitHub CLI:
 
    ```sh
-    gh auth login -u your-github-username
+    gh auth login
    ```
     
 4. **Run the Bootstrap Script**

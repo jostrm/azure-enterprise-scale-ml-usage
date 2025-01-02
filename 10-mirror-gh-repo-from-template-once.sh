@@ -8,31 +8,22 @@ NC='\033[0m' # No Color
 
 # 01. Setup and Preparation
 echo -e "${YELLOW}01. Copy environment variables locally to Github environments${NC}"
-
 # Read the variables from the .env file
-if [ -f ../.env ]; then
-    export $(grep -v '^#' ../.env | xargs)
+set -a # Enable export of all variables
+source .env # Source the .env file
+set +a # Disable export of all variables
+
+if [ -f ".env" ]; then
     if [ -z "$GITHUB_USERNAME" ]; then
         echo -e "${RED}Failed to read the first variable,GITHUB_USERNAME, from .env.${NC}"
         exit 1
+    else
+        echo -e "${GREEN}Successfully read the first variable GITHUB_USERNAME=${GITHUB_USERNAME}, from .env file${NC}"
     fi
 else
     echo -e "${RED}.env file does not exist.${NC}"
     exit 1
 fi
-
-github_your_repo_uri="https://github.com/${GITHUB_NEW_REPO}.git"
-
-echo -e "\e[36mAZD Dev name:\e[0m $DEV_NAME"
-echo -e "\e[36mGitHub New Repo URI:\e[0m $github_your_repo_uri"
-
-gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_ENV_NAME -f value="$DEV_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$DEV_SUBSCRIPTION_ID"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_LOCATION -f value="$AIFACTORY_LOCATION"
-gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env dev --body "replace_with_dev_sp_credencials"
-
-echo -e "${GREEN}02. Success!${NC}"
 
 # Define the temporary directory within the current directory
 current_dir=$(pwd)
@@ -63,8 +54,8 @@ github_new_repo_name=${GITHUB_NEW_REPO##*/}
 github_template_repo_name=${GITHUB_TEMPLATE_REPO##*/}
 
 echo -e "\e[33mBootstraping Parameters\e[0m"
-echo -e "\e[36mGitHub Username:\e[0m $github_username"
-echo -e "\e[36mGitHub Use SSH:\e[0m $github_use_ssh"
+echo -e "\e[36mGitHub Username:\e[0m $GITHUB_USERNAME"
+echo -e "\e[36mGitHub Use SSH:\e[0m $GITHUB_USE_SSH"
 echo -e "\e[36mGitHub Template Repo:\e[0m $GITHUB_TEMPLATE_REPO"
 echo -e "\e[36mGitHub Template Repo name:\e[0m $github_template_repo_name"
 echo -e "\e[36mGitHub Template Repo URI:\e[0m $github_template_repo_uri"
@@ -73,8 +64,40 @@ echo -e "\e[36mGitHub New Repo name:\e[0m $github_new_repo_name"
 echo -e "\e[36mGitHub New Repo URI:\e[0m $github_new_repo_uri"
 echo -e "\e[36mGitHub New Repo Visibility:\e[0m $GITHUB_NEW_REPO_VISIBILITY"
 
+# Check if the user is already logged in to GitHub
+echo -e "${GREEN}Checking GitHub authentication status...${NC}"
+gh auth status
+if [ $? -ne 0 ]; then
+    echo -e "${YELLOW}Not logged in to GitHub. Logging in...${NC}"
+    gh auth login
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to log in to GitHub.${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}Successfully logged in to GitHub.${NC}"
+    fi
+else
+    echo -e "${GREEN}Already logged in to GitHub.${NC}"
+fi
+
+# Check if login was successful
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to log in to GitHub.${NC}"
+    exit 1
+else
+    echo -e "${GREEN}Successfully logged in to GitHub.${NC}"
+fi
+# Prompt the user for confirmation
+read -p "Continue (Y/n)? " choice
+if [[ "$choice" == "n" || "$choice" == "N" ]]; then
+    echo "Exiting script."
+    exit 1
+fi
+
 # 02. Repository Creation and Initialization
 echo -e "${YELLOW}02. New GitHub Repository Creation and Initialization.${NC}"
+
+echo -e "$Current directory: $(pwd) ${NC}"
 
 # Remove the existing local folder if it exists
 if [ -d "$new_project_repo" ]; then
@@ -87,13 +110,20 @@ repo_exists=$(gh repo view "$GITHUB_NEW_REPO" > /dev/null 2>&1; echo $?)
 if [ $repo_exists -ne 0 ]; then
     # Create a new GitHub repository
     echo -e "${YELLOW}Creating a new GitHub repository.${NC}"
-    gh repo create "$GITHUB_NEW_REPO" --$GITHUB_NEW_REPO_VISIBILITY
+    gh repo create "$GITHUB_NEW_REPO" --$github_new_repo_visibility
     if [ $? -ne 0 ]; then
         echo -e "${RED}Failed to create new GitHub repository.${NC}"
         exit 1
     fi
 else
     echo -e "${GREEN}New GitHub repository already exists.${NC}"
+fi
+
+# Prompt the user for confirmation
+read -p "Continue (Y/n)? " choice
+if [[ "$choice" == "n" || "$choice" == "N" ]]; then
+    echo "Exiting script."
+    exit 1
 fi
 
 # Clone the template repository
@@ -157,23 +187,23 @@ gh repo edit $GITHUB_NEW_REPO --default-branch dev
 
 # Create GitHub environment named DEV with specified variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_ENV_NAME -f value="$dev_name"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$dev_subscription_id"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_LOCATION -f value="$aifactory_location"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_ENV_NAME -f value="$DEV_NAME"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$DEV_SUBSCRIPTION_ID"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_LOCATION -f value="$AIFACTORY_LOCATION"
 gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env dev --body "replace_with_dev_sp_credencials"
 
 # Create placeholders for GitHub environment STAGE variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_ENV_NAME -f value="stage_name"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_SUBSCRIPTION_ID -f value="stage_subscription_id"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_LOCATION -f value="aifactory_location"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_ENV_NAME -f value="$STAGE_NAME"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$STAGE_SUBSCRIPTION_ID"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_LOCATION -f value="AIFACTORY_LOCATION"
 gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env qa --body "replace_with_stage_sp_credencials"
 
 # Create placeholders for GitHub environment PROD variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_ENV_NAME -f value="prod_name"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_SUBSCRIPTION_ID -f value="prod_subscription_id"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_LOCATION -f value="aifactory_location"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_ENV_NAME -f value="$PROD_NAME"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$PROD_SUBSCRIPTION_ID"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_LOCATION -f value="AIFACTORY_LOCATION"
 gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env prod --body "replace_with_prod_sp_credencials"
 
 echo -e "${GREEN}New repository created successfully.${NC}"
