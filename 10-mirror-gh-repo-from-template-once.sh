@@ -104,20 +104,35 @@ if [ -d "$new_project_repo" ]; then
     rm -rf "$new_project_repo"
 fi
 
+# ADDED CODE
+mkdir -p "$new_project_repo"
+cd "$new_project_repo"
+echo -e "$Current directory: $(pwd) - Now GIT INIT${NC}"
+git init
+# ADDED CODE
+
 # Check if the repository already exists
 repo_exists=$(gh repo view "$GITHUB_NEW_REPO" > /dev/null 2>&1; echo $?)
 
 if [ $repo_exists -ne 0 ]; then
     # Create a new GitHub repository
     echo -e "${YELLOW}Creating a new GitHub repository.${NC}"
+    git remote -v
     gh repo create "$GITHUB_NEW_REPO" --$github_new_repo_visibility
     if [ $? -ne 0 ]; then
+        git remote -v
         echo -e "${RED}Failed to create new GitHub repository.${NC}"
         exit 1
     fi
 else
     echo -e "${GREEN}New GitHub repository already exists.${NC}"
+    git remote -v
 fi
+
+# # ADDED CODE - Add the new remote origin
+echo -e "$Current directory: $(pwd) - GIT REMOTE ADD ORIGIN: $GITHUB_NEW_REPO.git ${NC}"
+git remote add origin "https://github.com/$GITHUB_USERNAME/$GITHUB_NEW_REPO.git"
+# ADDED CODE
 
 # Prompt the user for confirmation
 read -p "Continue (Y/n)? " choice
