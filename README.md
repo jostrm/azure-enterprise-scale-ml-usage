@@ -25,11 +25,11 @@ This repo will also set default vaules for all 30 [AIFactory based parameters se
 Leaving only a hand-full variables for you you to setup in [bootstrap.properties](./bootstrap.properties) in this repo.
 
 > [!NOTE]
-> You can still go into advanced mode, and edit all the variables. You will find them here in the [parameters](aifactory\parameters)
+> You can still go into *advanced mode*, and edit all parameters. You will find them here in the [parameters](aifactory\parameters)
 >
 
 ## Setup options - a mirror-repo (Github) or "Bring your own repo" (Github or Azure Devops)
-After you have copied the  [bootstrap.properties.template](./bootstrap.properties-.template)and edited your [bootstrap.properties](./bootstrap.properties), you have the options below.
+After you have copied the  [bootstrap.properties.template](./bootstrap.properties-.template) and edited your [bootstrap.properties](./bootstrap.properties), you have the options below.
 
 - A) Bootstrap as a mirror-repo in Github, it becomes a private, internal or public Github repo
     - **When to choose**: If you are allowed to create own repos, and Gihub is your preffered choice.
@@ -38,7 +38,7 @@ After you have copied the  [bootstrap.properties.template](./bootstrap.propertie
         - [12-create-aifactory-pipeline-and-run-once.sh](./12-create-aifactory-pipeline-and-run-once.sh)
         - [13-add-project-pipeline-and-run-once.sh](./13-add-project-pipeline-and-run-once.sh)
 - B) Bring your own "empty" repo 
-    - **When to choose**: If your organizaiton do not allow you to create repos, or if Azure Devops is your preffered choice
+    - **When to choose**: If your organization don't allow you to create repos, or if you preffer Azure Devops.
     - **Automation scripts to run**: The scripts below, will bootstrap an empty repo.
         - [11-init-template-files-once.sh](./11-init-template-files-once.sh)
         - [12-create-aifactory-pipeline-and-run-once.sh](./12-create-aifactory-pipeline-and-run-once.sh)
