@@ -1,8 +1,8 @@
-# Enterprise Scale AI Factory - GH template
+# Enterprise Scale AI Factory - Template repo
 
 ![Header](documentation/images/header.png)
 
-Welcome to the Enterprise Scale AIFactory solution accelerator! <br>
+Welcome to the Enterprise Scale AIFactory solution accelerator, and the template repository! <br>
 This is a template repository, bootstrapped with the Enterprise Scale AIFactory submodule (which is the most common way of leveraging the AIFactory template acceleration)
 
 > [!IMPORTANT]
