@@ -104,6 +104,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# AIFactory template repo
+bootstrap.properties
+
 # Azure Machine Learning
 #.azureml/
 #*ws_config.json
