@@ -2,17 +2,19 @@
 
 ## Prerequisites
 
+* [Azure CLI (az)](https://aka.ms/install-az) - to manage Azure resources
+* [GitHub CLI (gh) version >=2.64.0](https://cli.github.com/) - to create GitHub repo and create environment variables and secrets
+    - Install: Git for Windows (Git Bash terminal in VS Cide) with CLI 2.64.0 https://git-scm.com/downloads/win
+
+### Nice to have (Prerequisites if you want to DEBUG)
 * [BICEP (.bicep)](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install) - to create (IaC) Azure resources
 * [Powershell (.ps1)](https://aka.ms/install-powershell) - to orchestrate creation (IaC) of Azure resources
-* [Azure CLI (az)](https://aka.ms/install-az) - to manage Azure resources
-* [GitHub CLI (gh)](https://cli.github.com/) - to create GitHub repo.
-* [Git](https://git-scm.com/downloads) - to update repository contents.
 
-You will also need:
+### You will also need:
 * [Azure Subscription](https://azure.microsoft.com/free/) - sign up for a free account.
-* [GitHub Account](https://github.com/signup) - sign up for a free account.
 * Permissions to create a Service Principal (SP) in your Azure AD Tenant.
 * Permissions to assign the Owner role to the SP within the subscription.
+* [GitHub Account](https://github.com/signup) - sign up for a free account.
 
 ## Steps to Bootstrap a Project
 

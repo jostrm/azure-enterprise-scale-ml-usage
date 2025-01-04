@@ -1,4 +1,4 @@
-name: esml-add-core-member-dev.yml
+name: infra-add-core-member-dev.yml
 
 on:
     #push:
@@ -23,10 +23,10 @@ env:
     user_object_ids_comma_separated_list: "012345ab-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # Comma-separated, ObjectIds of new user(s) to grant admin permissions
 
 jobs:
-    dev-add-core-member:
+    add-core-member-dev:
       name: Add core member to Dev
       environment:
-        name: Dev
+        name: dev
       runs-on: ubuntu-latest
       env:
         admin_storage_account: "adminstoracc123" # ESML AIFactory common datalake (storage account) name

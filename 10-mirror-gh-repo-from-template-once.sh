@@ -56,6 +56,23 @@ github_new_repo_name=${GITHUB_NEW_REPO##*/}
 github_template_repo_name=${GITHUB_TEMPLATE_REPO##*/}
 destination_dir="../$github_new_repo_name"
 
+# Get the GitHub CLI version
+gh_version=$(gh --version | grep -oP '\d+\.\d+\.\d+')
+
+# Function to compare versions
+version_lt() {
+    [ "$1" != "$2" ] && [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" = "$1" ]
+}
+
+# Check if gh_version is below 2.64.0
+if version_lt "$gh_version" "2.64.0"; then
+    echo -e "${RED}Error: GitHub CLI version 2.64.0 or higher is required. Current version: $gh_version${NC}"
+    echo -e "${YELLOW}Tip: If you have lower version than 2.14.1 you need to uninstall Git, and remove the folder manually on Windows: C:\Program Files\Git manually, and reinstall https://git-scm.com/downloads/win ${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}Github CLI Version: ${gh_version} ${NC}"
+
 echo -e "\e[33mBootstraping Parameters\e[0m"
 echo -e "\e[36mGitHub Username:\e[0m $GITHUB_USERNAME"
 echo -e "\e[36mGitHub Use SSH:\e[0m $GITHUB_USE_SSH"
@@ -201,26 +218,59 @@ gh repo edit $GITHUB_NEW_REPO --default-branch dev
 #   -F "allow_fork_syncing=true" \
 #   -F "restrictions=null"
 
-# Create GitHub environment named DEV with specified variables
+
+echo -e "${YELLOW}Bootstraps config from .env as Github environment variables and secrets. ${NC}"
+
+# Define environments
+environments=("dev" "stage" "prod")
+
+# AI Factory globals: variables and secrets
+for env in "${environments[@]}"; do
+    echo -e "${YELLOW}Setting variables and secrets for environment: $env${NC}"
+    
+    # Global: Variables
+    gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/$env/variables -f name=AIFACTORY_LOCATION -f value="$AIFACTORY_LOCATION"
+    gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/$env/variables -f name=AIFACTORY_LOCATION_SHORT -f value="$AIFACTORY_LOCATION_SHORT"
+    
+    # Global: Secrets
+    gh secret set AIFACTORY_SEEDING_KEYVAULT_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env $env --body "$AIFACTORY_SEEDING_KEYVAULT_SUBSCRIPTION_ID"
+    
+    # Project Specifics (1st project bootstrap): Secrets
+    gh secret set PROJECT_MEMBERS --repo $GITHUB_NEW_REPO --env $env --body "$PROJECT_MEMBERS"
+    gh secret set PROJECT_MEMBERS_EMAILS --repo $GITHUB_NEW_REPO --env $env --body "$PROJECT_MEMBERS_EMAILS"
+    gh secret set PROJECT_MEMBERS_IP_ADDRESS --repo $GITHUB_NEW_REPO --env $env --body "$PROJECT_MEMBERS_IP_ADDRESS"
+done
+
+# DEV variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev
 gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_ENV_NAME -f value="$DEV_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$DEV_SUBSCRIPTION_ID"
 gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_LOCATION -f value="$AIFACTORY_LOCATION"
+gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=GH_CLI_VERSION -f value="$gh_version"
+
+# DEV: Secrets
+gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env dev --body "$DEV_SUBSCRIPTION_ID"
 gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env dev --body "replace_with_dev_sp_credencials"
 
-# Create placeholders for GitHub environment STAGE variables
+# STAGE variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage
 gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_ENV_NAME -f value="$STAGE_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$STAGE_SUBSCRIPTION_ID"
 gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_LOCATION -f value="AIFACTORY_LOCATION"
-gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env qa --body "replace_with_stage_sp_credencials"
 
-# Create placeholders for GitHub environment PROD variables
+# STAGE: Secrets
+gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env stage --body "$STAGE_SUBSCRIPTION_ID"
+gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env stage --body "replace_with_stage_sp_credencials"
+
+# PROD variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod
 gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_ENV_NAME -f value="$PROD_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_SUBSCRIPTION_ID -f value="$PROD_SUBSCRIPTION_ID"
 gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_LOCATION -f value="AIFACTORY_LOCATION"
+
+# PROD:Secrets 
+gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env prod --body "$PROD_SUBSCRIPTION_ID"
 gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env prod --body "replace_with_prod_sp_credencials"
+
+# TODO Future: dev.env / stage.env / prod.env
+# gh secret set -f prod.env --env prod
 
 echo -e "${GREEN}New repository created successfully.${NC}"
 
