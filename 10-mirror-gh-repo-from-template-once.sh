@@ -249,7 +249,12 @@ gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_
 
 # DEV: Secrets
 gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env dev --body "$DEV_SUBSCRIPTION_ID"
-gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env dev --body "replace_with_dev_sp_credencials"
+gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env dev --body "{
+       "clientId": "your-client-id-aka-appId",
+       "clientSecret": "your-client-secret-aka-servicPrincipalSecret",
+       "subscriptionId": "your-subscription-id",
+       "tenantId": "your-tenant-id"
+   }"
 
 # STAGE variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage

@@ -204,10 +204,8 @@ You need to login via `Azure CLI` and `Github CLI`, but recommendation is to als
     > **Note:** If you also want to setup the infrastructure for STAGE and PROD environemnt, simpy edit the variable in the script called `dev_stage_prod=dev` to `stage` or `prod` and re-run the script.
 
 ## BOOTSTRAP Option B) Mirror-repo
-Step 1,2 is not nessesary here. 
-But make sure you have done step 3,4,5,6,7 mentioned in section [## BOOTSTRAP Option A) Bring-Your-Own-Repo](#bootstrap-option-a-bring-your-own-repo)
 
-1. **Bootstrap (mirror-repo) - Run the Scripts**
+- B1)  **Bootstrap (mirror-repo) - Run the Scripts**
 Make sure you have edited the env. file 
 
     Run [10-mirror-gh-repo-from-template-once.sh](../10-mirror-gh-repo-from-template-once.sh)
@@ -220,5 +218,7 @@ Make sure you have edited the env. file
 
     This bootstrap script will create a mirror-repo, your own repo, and open VS Code to the local representation, and provide a link to your Github repo
     At the end of its execution, the script will have created Azure resources and 1 AIFactory project, of type ESGenAI (which is the default type)
+
+- B2) **Do steps 3,4,5,6,7* mentioned in previous section [## BOOTSTRAP Option A) Bring-Your-Own-Repo](#bootstrap-option-a-bring-your-own-repo)
 
 DONE!
