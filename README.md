@@ -18,10 +18,12 @@ It also provides an automation script to copy templates IaC automation variables
 
 ## Simple mode VS Advanced mode
 This repo is the *simple mode* to setup an AIFactory. This contains automation to:
-- Automate the [full manual AIFactory setup process seen here](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/v2/10-19/13-setup-aifactory.md), estimated time effort 2h.
-- Set default vaules for all 30 [AIFactory based parameters seen here](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/v2/10-19/13-parameters-ado.md), estimated time effort 1h.
+- Automate the [full manual AIFactory setup process seen here](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/v2/10-19/13-setup-aifactory.md). Estimated time effort for manual setup is 2h, and is reduced to 10min with this repo.
+- Set default vaules for all 30 [AIFactory based parameters seen here](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/v2/10-19/13-parameters-ado.md), saving you estimated time effort of 1h.
 
-Leaving only a hand-full variables for you you to setup in [.env.template](./.env.template) in this repo.
+The ESML AIFactory with manual seup is said to accelerate setup from 500-1500h down to ~4h setup time.<br>
+This repo accelerates even further, below 1h, since leaving only a hand-full of variables to setup in [.env.template](./.env.template)
+-> Making it a good choice to quickly setup infrastructure securely for AI-hackathons, workshops, education - scenarios where you are OK if naming convention does not comply 100% with your organizations choices, and you don't need to peer it to your Hub - e.g. where `AIFAcotry standalone mode` is OK.
 
 > [!NOTE]
 > You can still go into *advanced mode*, and edit all parameters. You will find them here in the [parameters](aifactory\parameters)
@@ -47,11 +49,11 @@ After you have copied the  [.env.template.template](./.env.template-.template) a
 
 > [!NOTE]
 >   
-> The steps above, will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start with step A or B, you need to have your [.env](./.env). Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
+> The steps A nd B above will create pipelines in Azure Devops or Github (as GHA workflowws), and the pipelines will setup the AIFactory and AI Factory projects. Before you start you will need configure your [.env](./.env) environment variables. Read more at [bootstrapping.md](./documentation/bootstrapping.md) section.
 >
 
 ## How to create more projects of different types? 
-As explained in [](#setup-options---a-mirror-repo-github-or-bring-your-own-repo-github-or-azure-devops), you will end up with automation pipelines, in either your own Azure Devops (as Release pipelines) or your own Github repositorys (as Actions/Workflows).
+As explained in previous section you will end up with automation pipelines, in either your own Azure Devops (as Release pipelines) or your own Github repositorys (as Actions/Workflows).
 
 The pipelines, can be executed multiple times, to provision multiple AIFactory projects. 
 You only need to change a few parameters, such as below
@@ -69,13 +71,13 @@ For full documentation, please visit [`Enterprise Scale AI Factory documentation
 - Easy-to-configure and extend templates: DataOps, MLOps, GenAIOps
 - AI Factory project types
     - ESGenAI: GenAI: Azure AI Foundry with RAG using Azure AI Search
-        - Enterprise secrurity: 
-            A) Networking: Either fully private mode (private link for also the Azure AI Studio) or private link with AI Studio accessible from certain IP
-            B) Role-based access control, EntraID for all sercice-to-servcice and user-to-service connections. 
-                - E.g. not using any keys (since global keys have full permission to services, it is not recommended)
     - ESML: DataOps and MLOps with notebooks templates - both Databricks (Pyspark) and Jupyter notebooks(Python). Mix compute & tech, while using same MLOps pipeline
 
-[Full documentation -  "Enterprise Scale AI Factory" submodule](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/readme.md)
+> [!NOTE]
+>**Enterprise secrurity**: Both fully private mode (private link for also the Azure AI Studio) or private link with AI Studio accessible from certain IP. Role-based access control is used, meaning EntraID for all sercice-to-servcice and user-to-service connections. Not using any keys (since global keys have full permission to services, it is not recommended)
+>
+
+[Full documentation -  "Enterprise Scale AI Factory"](https://github.com/jostrm/azure-enterprise-scale-ml/blob/main/documentation/readme.md)
 
 ## How-to
 
