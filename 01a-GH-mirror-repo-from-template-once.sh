@@ -323,7 +323,7 @@ git branch -D main
 git branch -m main
 git push -f origin main
 
-echo -e "${RED}Troubleshooting 004${NC}"
+# echo -e "${RED}Troubleshooting 004${NC}"
 
 # Create dev branch "if not exists"
 if ! git ls-remote --exit-code --heads origin dev; then
@@ -339,7 +339,6 @@ fi
 echo -e "${YELLOW}Setting default branch in the new repository.${NC}"
 gh repo edit $GITHUB_NEW_REPO --default-branch dev
 
-echo -e "${RED}Troubleshooting 005${NC}"
 
 # DEV branch protection rule
 # gh api \
