@@ -140,12 +140,7 @@ fi
 echo -e "${YELLOW}02. New GitHub Repository Creation and Initialization.${NC}"
 
 echo -e "$Current directory (for tempfiles): $(pwd) ${NC}"
-echo -e "$Destination directory(for your repo locally): $(destination_dir) ${NC}"
-
-# Remove the existing local folder if it exists
-if [ -d "$github_new_repo_name" ]; then
-    rm -rf "$github_new_repo_name"
-fi
+echo -e "$Destination directory(for your repo locally): $destination_dir ${NC}"
 
 # Check if the repository already exists
 repo_exists=$(gh repo view "$GITHUB_NEW_REPO" > /dev/null 2>&1; echo $?)
@@ -153,7 +148,7 @@ repo_exists=$(gh repo view "$GITHUB_NEW_REPO" > /dev/null 2>&1; echo $?)
 if [ $repo_exists -ne 0 ]; then
     # Create a new GitHub repository
     echo -e "${YELLOW}Creating a new GitHub repository.${NC}"
-    gh repo create "$GITHUB_NEW_REPO" --$github_new_repo_visibility
+    gh repo create "$GITHUB_NEW_REPO" --$GITHUB_NEW_REPO_VISIBILITY
     if [ $? -ne 0 ]; then
         echo -e "${RED}Failed to create new GitHub repository.${NC}"
         exit 1
@@ -177,6 +172,7 @@ cd $github_template_repo_name.git
 
 # Mirror-push to the new repository
 git push --mirror "$github_new_repo_uri"
+
 if [[ $? -ne 0 ]]; then
   if [[ "$GITHUB_USE_SSH" == "true" ]]; then
     echo "ERROR: Permission denied to GitHub repo. GITHUB_USE_SSH is true. Please look at this reference:"
@@ -188,8 +184,12 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-cd ..
-rm -rf $template_project_repo_name.git
+# Verify the new repository
+git remote -v
+git remote add origin $github_template_repo_uri
+git push -u origin main
+
+echo -e "${GREEN}Everything up-to-date${NC}"
 
 # Create dev branch "if not exists"
 if ! git ls-remote --exit-code --heads origin dev; then
@@ -200,12 +200,22 @@ else
   echo "Branch 'dev' already exists."
 fi
 
+echo -e "${RED}Troubleshooting 002${NC}"
+cd ..
+rm -rf $github_template_repo_name.git # rm -rf $template_project_repo_name.git
+
+echo -e "${RED}Troubleshooting 003${NC}"
+
 # Set the default branch to develop
 gh repo edit $GITHUB_NEW_REPO --default-branch dev
+
+echo -e "${RED}Troubleshooting 004${NC}"
 
 # Setting default branch
 echo -e "${YELLOW}Setting default branch in the new repository.${NC}"
 gh repo edit $GITHUB_NEW_REPO --default-branch dev
+
+echo -e "${RED}Troubleshooting 005${NC}"
 
 # dev branch protection rule
 # NOTE: removed to make it more flexible in the workshop
@@ -272,6 +282,14 @@ gh_version=$(gh --version | grep -oP '\d+\.\d+\.\d+' | head -n 1)
 # Define environments
 environments=("dev" "stage" "prod")
 
+# Create environments
+gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev
+create_or_update_variable "dev" "AZURE_ENV_NAME" "dev"
+gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage
+create_or_update_variable "stage" "AZURE_ENV_NAME" "test"
+gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod
+create_or_update_variable "prod" "AZURE_ENV_NAME" "prod"
+
 # AI Factory globals: variables and secrets
 for env in "${environments[@]}"; do
     echo -e "${YELLOW}Setting variables and secrets for environment: $env${NC}"
@@ -312,8 +330,6 @@ for env in "${environments[@]}"; do
 done
 
 # DEV variables
-gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev
-create_or_update_variable "dev" "AZURE_ENV_NAME" "dev"
 create_or_update_variable "dev" "AZURE_LOCATION" "$AIFACTORY_LOCATION"
 create_or_update_variable "dev" "AZURE_SUBSCRIPTION_ID" "$DEV_SUBSCRIPTION_ID"
 create_or_update_variable "dev" "GH_CLI_VERSION" "$gh_version"
@@ -322,8 +338,6 @@ create_or_update_variable "dev" "GH_CLI_VERSION" "$gh_version"
 create_or_update_secret "dev" "AZURE_CREDENTIALS" "replace_with_dev_sp_credencials"
 
 # STAGE variables
-gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage
-create_or_update_variable "stage" "AZURE_ENV_NAME" "test"
 create_or_update_variable "stage" "AZURE_LOCATION" "$AIFACTORY_LOCATION"
 create_or_update_variable "stage" "AZURE_SUBSCRIPTION_ID" "$STAGE_SUBSCRIPTION_ID" 
 
@@ -331,8 +345,6 @@ create_or_update_variable "stage" "AZURE_SUBSCRIPTION_ID" "$STAGE_SUBSCRIPTION_I
 create_or_update_secret "stage" "AZURE_CREDENTIALS" "replace_with_stage_sp_credencials"
 
 # PROD variables
-gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod
-create_or_update_variable "prod" "AZURE_ENV_NAME" "prod"
 create_or_update_variable "prod" "AZURE_LOCATION" "$AIFACTORY_LOCATION"
 create_or_update_variable "prod" "AZURE_SUBSCRIPTION_ID" "$PROD_SUBSCRIPTION_ID"
 
