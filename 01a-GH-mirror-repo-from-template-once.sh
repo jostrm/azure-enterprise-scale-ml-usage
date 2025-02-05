@@ -6,6 +6,16 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Load .env file
+if [ -f .env ]; then
+  set -o allexport
+  source .env
+  set -o allexport -
+else
+  echo "Error: .env file not found."
+  exit 1
+fi
+
 # 01. Setup and Preparation
 echo -e "${YELLOW}01. Copy environment variables locally to Github environments${NC}"
 # Read the variables from the .env file
@@ -58,6 +68,7 @@ destination_dir="../$github_new_repo_name"
 
 # Get the GitHub CLI version
 gh_version=$(gh --version | grep -oP '\d+\.\d+\.\d+')
+gh_version_once=$(gh --version | grep -oP '\d+\.\d+\.\d+' | head -n 1)
 
 # Function to compare versions
 version_lt() {
@@ -71,7 +82,7 @@ if version_lt "$gh_version" "2.64.0"; then
     exit 1
 fi
 
-echo -e "${GREEN}Github CLI Version: ${gh_version} ${NC}"
+echo -e "${GREEN}Github CLI Version: ${gh_version_once} ${NC}"
 
 echo -e "\e[33mBootstraping Parameters\e[0m"
 echo -e "\e[36mGitHub Username:\e[0m $GITHUB_USERNAME"
@@ -219,7 +230,44 @@ gh repo edit $GITHUB_NEW_REPO --default-branch dev
 #   -F "restrictions=null"
 
 
+# Function to check if a variable exists
+check_variable_exists() {
+  gh api repos/$GITHUB_NEW_REPO/environments/$1/variables/$2 > /dev/null 2>&1
+}
+
+# Function to create or update a variable
+create_or_update_variable() {
+  local env=$1
+  local name=$2
+  local value=$3
+  if check_variable_exists $env $name; then
+    gh api --method PATCH -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/$env/variables/$name -f value="$value"
+  else
+    gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/$env/variables -f name=$name -f value="$value"
+  fi
+}
+
+# Function to check if a secret exists
+check_secret_exists() {
+  gh secret list --repo $GITHUB_NEW_REPO --env $1 | grep -q $2
+}
+
+# Function to create or update a secret
+create_or_update_secret() {
+  local env=$1
+  local name=$2
+  local value=$3
+  if check_secret_exists $env $name; then
+    gh secret set $name --repo $GITHUB_NEW_REPO --env $env --body "$value"
+  else
+    gh secret set $name --repo $GITHUB_NEW_REPO --env $env --body "$value"
+  fi
+}
+
 echo -e "${YELLOW}Bootstraps config from .env as Github environment variables and secrets. ${NC}"
+
+# Get the GitHub CLI version
+gh_version=$(gh --version | grep -oP '\d+\.\d+\.\d+' | head -n 1)
 
 # Define environments
 environments=("dev" "stage" "prod")
@@ -229,50 +277,67 @@ for env in "${environments[@]}"; do
     echo -e "${YELLOW}Setting variables and secrets for environment: $env${NC}"
     
     # Global: Variables
-    gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/$env/variables -f name=AIFACTORY_LOCATION -f value="$AIFACTORY_LOCATION"
-    gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/$env/variables -f name=AIFACTORY_LOCATION_SHORT -f value="$AIFACTORY_LOCATION_SHORT"
+    create_or_update_variable $env "AIFACTORY_LOCATION" "$AIFACTORY_LOCATION"
+    create_or_update_variable $env "AIFACTORY_LOCATION_SHORT" "$AIFACTORY_LOCATION_SHORT"
+    create_or_update_variable $env "AIFACTORY_SUFFIX" "$AIFACTORY_SUFFIX"
+    create_or_update_variable $env "AIFACTORY_PREFIX" "$AIFACTORY_PREFIX"
+
+    # Cost optimization
+    create_or_update_variable $env "USE_COMMON_ACR_FOR_PROJECTS" "$USE_COMMON_ACR_FOR_PROJECTS"
+
+    # Seeding keyvault
+    create_or_update_variable $env "AIFACTORY_SEEDING_KEYVAULT_NAME" "$AIFACTORY_SEEDING_KEYVAULT_NAME"
+    create_or_update_variable $env "AIFACTORY_SEEDING_KEYVAULT_RG" "$AIFACTORY_SEEDING_KEYVAULT_RG"
+
+    # Networking
+    create_or_update_variable $env "AIFACTORY_LOCATION_SHORT" "$AIFACTORY_LOCATION_SHORT"
     
+    # Project specific settings, for all environments
+    create_or_update_variable $env "PROJECT_MEMBERS_EMAILS" "$PROJECT_MEMBERS_EMAILS"
+    create_or_update_variable $env "PROJECT_TYPE" "$PROJECT_TYPE"
+    create_or_update_variable $env "PROJECT_NUMBER" "$PROJECT_NUMBER"
+    create_or_update_variable $env "PROJECT_SERVICE_PRINCIPAL_KV_S_NAME_APPID" "$PROJECT_SERVICE_PRINCIPAL_KV_S_NAME_APPID"
+    create_or_update_variable $env "PROJECT_SERVICE_PRINCIPAL_KV_S_NAME_OID" "$PROJECT_SERVICE_PRINCIPAL_KV_S_NAME_OID"
+    create_or_update_variable $env "PROJECT_SERVICE_PRINCIPAL_KV_S_NAME_S" "$PROJECT_SERVICE_PRINCIPAL_KV_S_NAME_S"
+    
+    # Misc
+    create_or_update_variable $env "RUN_JOB1_NETWORKING" "true"
+
     # Global: Secrets
-    gh secret set AIFACTORY_SEEDING_KEYVAULT_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env $env --body "$AIFACTORY_SEEDING_KEYVAULT_SUBSCRIPTION_ID"
+    create_or_update_secret $env "AIFACTORY_SEEDING_KEYVAULT_SUBSCRIPTION_ID" "$AIFACTORY_SEEDING_KEYVAULT_SUBSCRIPTION_ID"
     
-    # Project Specifics (1st project bootstrap): Secrets
-    gh secret set PROJECT_MEMBERS --repo $GITHUB_NEW_REPO --env $env --body "$PROJECT_MEMBERS"
-    gh secret set PROJECT_MEMBERS_EMAILS --repo $GITHUB_NEW_REPO --env $env --body "$PROJECT_MEMBERS_EMAILS"
-    gh secret set PROJECT_MEMBERS_IP_ADDRESS --repo $GITHUB_NEW_REPO --env $env --body "$PROJECT_MEMBERS_IP_ADDRESS"
+    # Project Specifics (1st project bootstrap): 
+    create_or_update_secret $env "PROJECT_MEMBERS" "$PROJECT_MEMBERS"
+    create_or_update_secret $env "PROJECT_MEMBERS_IP_ADDRESS" "$PROJECT_MEMBERS_IP_ADDRESS"
 done
 
 # DEV variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_ENV_NAME -f value="$DEV_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=AZURE_LOCATION -f value="$AIFACTORY_LOCATION"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/dev/variables -f name=GH_CLI_VERSION -f value="$gh_version"
+create_or_update_variable "dev" "AZURE_ENV_NAME" "dev"
+create_or_update_variable "dev" "AZURE_LOCATION" "$AIFACTORY_LOCATION"
+create_or_update_variable "dev" "AZURE_SUBSCRIPTION_ID" "$DEV_SUBSCRIPTION_ID"
+create_or_update_variable "dev" "GH_CLI_VERSION" "$gh_version"
 
 # DEV: Secrets
-gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env dev --body "$DEV_SUBSCRIPTION_ID"
-gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env dev --body "{
-       "clientId": "your-client-id-aka-appId",
-       "clientSecret": "your-client-secret-aka-servicPrincipalSecret",
-       "subscriptionId": "your-subscription-id",
-       "tenantId": "your-tenant-id"
-   }"
+create_or_update_secret "dev" "AZURE_CREDENTIALS" "replace_with_dev_sp_credencials"
 
 # STAGE variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_ENV_NAME -f value="$STAGE_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/stage/variables -f name=AZURE_LOCATION -f value="AIFACTORY_LOCATION"
+create_or_update_variable "stage" "AZURE_ENV_NAME" "test"
+create_or_update_variable "stage" "AZURE_LOCATION" "$AIFACTORY_LOCATION"
+create_or_update_variable "stage" "AZURE_SUBSCRIPTION_ID" "$STAGE_SUBSCRIPTION_ID" 
 
 # STAGE: Secrets
-gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env stage --body "$STAGE_SUBSCRIPTION_ID"
-gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env stage --body "replace_with_stage_sp_credencials"
+create_or_update_secret "stage" "AZURE_CREDENTIALS" "replace_with_stage_sp_credencials"
 
 # PROD variables
 gh api --method PUT -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_ENV_NAME -f value="$PROD_NAME"
-gh api --method POST -H "Accept: application/vnd.github+json" repos/$GITHUB_NEW_REPO/environments/prod/variables -f name=AZURE_LOCATION -f value="AIFACTORY_LOCATION"
+create_or_update_variable "prod" "AZURE_ENV_NAME" "prod"
+create_or_update_variable "prod" "AZURE_LOCATION" "$AIFACTORY_LOCATION"
+create_or_update_variable "prod" "AZURE_SUBSCRIPTION_ID" "$PROD_SUBSCRIPTION_ID"
 
-# PROD:Secrets 
-gh secret set AZURE_SUBSCRIPTION_ID --repo $GITHUB_NEW_REPO --env prod --body "$PROD_SUBSCRIPTION_ID"
-gh secret set AZURE_CREDENTIALS --repo $GITHUB_NEW_REPO --env prod --body "replace_with_prod_sp_credencials"
+# PROD: Secrets
+create_or_update_secret "prod" "AZURE_CREDENTIALS" "replace_with_prod_sp_credencials"
 
 # TODO Future: dev.env / stage.env / prod.env
 # gh secret set -f prod.env --env prod
