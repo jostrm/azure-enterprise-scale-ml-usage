@@ -158,13 +158,6 @@ else
     git remote -v
 fi
 
-# Prompt the user for confirmation
-#read -p "Continue (Y/n)? " choice
-#if [[ "$choice" == "n" || "$choice" == "N" ]]; then
-#    echo "Exiting script."
-#    exit 1
-#fi
-
 # Clone the template repository
 echo -e "${YELLOW}Cloning template repository.${NC}"
 git clone --bare "$github_template_repo_uri"
@@ -184,61 +177,9 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-# Verify the new repository
-git remote -v
-git remote add origin $github_template_repo_uri
-git push -u origin main
-
 echo -e "${GREEN}Everything up-to-date${NC}"
-
-# Create dev branch "if not exists"
-if ! git ls-remote --exit-code --heads origin dev; then
-  # Create the develop branch if it does not exist
-  git checkout -b dev
-  git push origin dev
-else
-  echo "Branch 'dev' already exists."
-fi
-
-echo -e "${RED}Troubleshooting 002${NC}"
 cd ..
 rm -rf $github_template_repo_name.git # rm -rf $template_project_repo_name.git
-
-echo -e "${RED}Troubleshooting 003${NC}"
-
-# Set the default branch to develop
-gh repo edit $GITHUB_NEW_REPO --default-branch dev
-
-echo -e "${RED}Troubleshooting 004${NC}"
-
-# Setting default branch
-echo -e "${YELLOW}Setting default branch in the new repository.${NC}"
-gh repo edit $GITHUB_NEW_REPO --default-branch dev
-
-echo -e "${RED}Troubleshooting 005${NC}"
-
-# dev branch protection rule
-# NOTE: removed to make it more flexible in the workshop
-# gh api \
-#   --method PUT \
-#   -H "Accept: application/vnd.github+json" \
-#   -H "X-GitHub-Api-Version: 2022-11-28" \
-#   repos/$GITHUB_NEW_REPO/branches/dev/protection \
-#   -F "required_status_checks[strict]=true" \
-#   -F "required_status_checks[contexts][]=evaluate-flow" \
-#   -F "enforce_admins=true" \
-#   -F "required_pull_request_reviews[dismiss_stale_reviews]=false" \
-#   -F "required_pull_request_reviews[require_code_owner_reviews]=false" \
-#   -F "required_pull_request_reviews[required_approving_review_count]=0" \
-#   -F "required_pull_request_reviews[require_last_push_approval]=false" \
-#   -F "allow_force_pushes=true" \
-#   -F "allow_deletions=true" \
-#   -F "block_creations=true" \
-#   -F "required_conversation_resolution=true" \
-#   -F "lock_branch=false" \
-#   -F "allow_fork_syncing=true" \
-#   -F "restrictions=null"
-
 
 # Function to check if a variable exists
 check_variable_exists() {
@@ -381,6 +322,47 @@ git commit -m "Initial commit with cleaned history"
 git branch -D main
 git branch -m main
 git push -f origin main
+
+echo -e "${RED}Troubleshooting 004${NC}"
+
+# Create dev branch "if not exists"
+if ! git ls-remote --exit-code --heads origin dev; then
+  # Create the develop branch if it does not exist
+  echo -e "${YELLOW}Create the develop branch if it does not exist${NC}"
+  git checkout -b dev
+  git push origin dev
+else
+  echo "Branch 'dev' already exists."
+fi
+
+# Setting default branch to dev
+echo -e "${YELLOW}Setting default branch in the new repository.${NC}"
+gh repo edit $GITHUB_NEW_REPO --default-branch dev
+
+echo -e "${RED}Troubleshooting 005${NC}"
+
+# DEV branch protection rule
+# gh api \
+#   --method PUT \
+#   -H "Accept: application/vnd.github+json" \
+#   -H "X-GitHub-Api-Version: 2022-11-28" \
+#   repos/$GITHUB_NEW_REPO/branches/dev/protection \
+#   -F "required_status_checks[strict]=true" \
+#   -F "required_status_checks[contexts][]=evaluate-flow" \
+#   -F "enforce_admins=true" \
+#   -F "required_pull_request_reviews[dismiss_stale_reviews]=false" \
+#   -F "required_pull_request_reviews[require_code_owner_reviews]=false" \
+#   -F "required_pull_request_reviews[required_approving_review_count]=0" \
+#   -F "required_pull_request_reviews[require_last_push_approval]=false" \
+#   -F "allow_force_pushes=true" \
+#   -F "allow_deletions=true" \
+#   -F "block_creations=true" \
+#   -F "required_conversation_resolution=true" \
+#   -F "lock_branch=false" \
+#   -F "allow_fork_syncing=true" \
+#   -F "restrictions=null"
+
+# REP= DESCRIPTION: 
 
 #gh api -X PATCH "repos/$GITHUB_USERNAME/$GITHUB_NEW_REPO" -f description="Your repository. Your Enteprise Scale AI Factory."
 #gh repo edit https://github.com/jostrm/azure-enterprise-scale-ml-usage-2 --description "Your Enteprise Scale AI Factory.Your repository.Created from the Azure Enterprise Scale ML template."
